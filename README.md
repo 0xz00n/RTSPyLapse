@@ -1,5 +1,5 @@
 # RTSPyLapse
-RTSP stream timelapse creator
+An RTSP stream timelapse creator.
 
 ## Requirements
 ```
@@ -10,6 +10,9 @@ python3 -m pip install -r requirements.txt
 ```
 
 ## Help Info
+This program can be used from either the command line or via the config.py file.
+
+> Command line options
 ```
 $ python3 app.py
 usage: app.py [-h] [--cli ] [--conf [config.py]] [-u] [-o] [-p] [-cs] [-ce]
@@ -32,4 +35,24 @@ optional arguments:
                         Number of frames per second.  Default is 25. Ex: -f 30
   -e [], --encoder []   Encoder to use for mp4 creation, uses system default if unspecified.  Ex: -e h264_omx
 
+```
+
+> Config.py file
+```
+# RTSP URL. Ex: 'rtsp://username:password@1.2.3.4/live'
+url = ''
+# Name of the final mp4 file. Ex: 'timelapse1'
+outputfile = ''
+# Full path to the desired working directory. Ex: '/home/usr/timelapse/'
+path = ''
+# Time to start captures in 24h format.  Ex: '15:30'
+capturestart = ''
+# Time to end captures in 24h format. Ex: '08:15'
+captureend = ''
+# Time between still captures.  Default (And minimum) is 2.5 seconds. Ex: 5
+delay = 2.5
+# Number of frames per second.  Default is 25.
+framerate = 25
+# Encoder to use for mp4 creation.  Leave empty for default.
+encoder = ''
 ```
