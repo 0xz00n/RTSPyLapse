@@ -1,5 +1,5 @@
 # RTSPyLapse
-An RTSP stream timelapse creator.
+An RTSP stream timelapse creator.  Captures stills from an RTSP stream between specified times and creates an mp4 file using the captured stills.
 
 ## Requirements
 >Note that this has only been tested on Linux systems.
