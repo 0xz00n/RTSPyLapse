@@ -2,6 +2,7 @@
 An RTSP stream timelapse creator.
 
 ## Requirements
+>Note that this has only been tested on Linux systems.
 ```
 apt install ffmpeg
 git clone https://github.com/0xz00n/RTSPyLapse.git
