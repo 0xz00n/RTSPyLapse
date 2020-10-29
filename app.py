@@ -124,11 +124,12 @@ def compileImages(outputfile,path,frames,encoder=None):
     timestamp = today.strftime('_%Y-%m-%d')
     load = ffmpeg.input(path + outputfile + '*.jpg', pattern_type = 'glob', framerate = frames)
     filename = path + outputfile + timestamp + '.mp4'
-    if os.stat(filename).st_size == 0:
-        print('Detected empty mp4, probably from bad encoder.  Deleting.')
-        os.remove(filename)
     if os.path.isfile(filename):
-        shutil.move(filename, filename + '.old' + timestamp)
+        if os.stat(filename).st_size == 0:
+            print('Detected empty mp4, probably from bad encoder.  Deleting.')
+            os.remove(filename)
+        else:
+            shutil.move(filename, filename + '.old' + timestamp)
     if not encoder == None:
         combine = load.output(path + outputfile + timestamp + '.mp4', **{'c:v': encoder})
     else:
