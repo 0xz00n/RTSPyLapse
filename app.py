@@ -206,7 +206,7 @@ if args.cli == 1:
     capturestart = args.capturestart
     captureend = args.captureend
     delay = float(args.delay) - float(2.5)
-    framerate = int(args.framefrate)
+    framerate = int(args.framerate)
     encoder = args.encoder
 elif args.conf == 1:
     from config import *
