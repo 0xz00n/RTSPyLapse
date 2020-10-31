@@ -99,7 +99,7 @@ def parseArgs():
         '--encoder',
         nargs = '?',
         const = None,
-        type = bool,
+        type = str,
         help = 'Encoder to use for mp4 creation, uses system default if unspecified.  Ex: -e h264_omx',
         metavar = '',
         required = False
