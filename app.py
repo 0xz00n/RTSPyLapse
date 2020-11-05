@@ -243,6 +243,7 @@ while True:
                 time.sleep(delay)
             except ffmpeg.Error as e:
                 error = e.stderr.decode('utf8')
+                print(error)
                 failLogic(error,url,outputfile,path)
         else:
             break
