@@ -115,7 +115,7 @@ def parseArgs():
 def streamCap(url,outputfile,path):
     today = datetime.datetime.now()
     timestamp = today.strftime('%Y-%m-%d_%H-%M-%S')
-    stream = ffmpeg.input(url, ss = 0)
+    stream = ffmpeg.input(url, ss = 0, rtsp_transport = 'tcp')
     capture = stream.output(path + outputfile + timestamp + '.jpg', vframes = 1)
     capture.run(capture_stdout = True, capture_stderr = True)
 
