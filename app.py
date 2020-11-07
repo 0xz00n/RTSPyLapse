@@ -120,6 +120,7 @@ def streamCap(url,outputfile,path):
     capture.run(capture_stdout = True, capture_stderr = True)
 
 def compileImages(outputfile,path,frames,encoder=None):
+    print('Compiling still frames...')
     today = datetime.datetime.now()
     timestamp = today.strftime('_%Y-%m-%d')
     load = ffmpeg.input(path + outputfile + '*.jpg', pattern_type = 'glob', framerate = frames)
@@ -138,13 +139,14 @@ def compileImages(outputfile,path,frames,encoder=None):
     print('Compiled', filename)
 
 def cleanupDir(outputfile,path):
+    print('Cleaning up working directory...')
     filelist = glob.glob(path + outputfile + '*.jpg')
     for filename in filelist:
         try:
             os.remove(filename)
         except:
             print('Error while deleting file: ', filename)
-    print('Cleaned up working directory')
+    print('Done.')
 
 def timeLogic(capturestart,captureend):
     try:
@@ -180,6 +182,7 @@ def failLogic(error,url,outputfile,path):
     elif 'No route to host' in error:
         print('No route to host.  Is the URL correct?')
     else:
+        print(error)
         raise error
     while tryagain < 5: 
         print('Trying ' + str((5 - tryagain)) + ' more times...')
@@ -239,12 +242,16 @@ while True:
         if result:
             wait = False
             try:
+                print('Capturing')
                 streamCap(url,outputfile,path)
+                print('Captured')
                 time.sleep(delay)
-            except ffmpeg.Error as e:
-                error = e.stderr.decode('utf8')
-                print(error)
-                failLogic(error,url,outputfile,path)
+            except (ffmpeg.Error, Exception) as e:
+                if not e.stderr.decode('utf8') == None:
+                    print(error)
+                    failLogic(error,url,outputfile,path)
+                else:
+                    print(error)
         else:
             break
     if wait == False:
