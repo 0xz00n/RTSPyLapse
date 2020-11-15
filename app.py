@@ -115,7 +115,7 @@ def parseArgs():
 def streamCap(url,outputfile,path):
     today = datetime.datetime.now()
     timestamp = today.strftime('%Y-%m-%d_%H-%M-%S')
-    stream = ffmpeg.input(url, ss = 0, rtsp_transport = 'tcp')
+    stream = ffmpeg.input(url, ss = 0, rtsp_transport = 'tcp', stimeout = 4000000)
     capture = stream.output(path + outputfile + timestamp + '.jpg', vframes = 1)
     capture.run(capture_stdout = True, capture_stderr = True)
 
@@ -242,16 +242,18 @@ while True:
         if result:
             wait = False
             try:
-                print('Capturing')
                 streamCap(url,outputfile,path)
-                print('Captured')
                 time.sleep(delay)
-            except (ffmpeg.Error, Exception) as e:
-                if not e.stderr.decode('utf8') == None:
-                    print(error)
-                    failLogic(error,url,outputfile,path)
-                else:
-                    print(error)
+            except ffmpeg.Error as e:
+                try:
+                    iter(e)
+                    if not e.stderr.decod('utf8') == None:
+                        print(e)
+                        failLogic(e,url,outputfile,path)
+                    else:
+                        print(e)
+                except TypeError as e:
+                    print(e)
         else:
             break
     if wait == False:
