@@ -77,6 +77,7 @@ def parseArgs():
         '--delay',
         nargs = '?',
         const = 2.5,
+        default = 2.5,
         type = float,
         help = 'Time between still captures.  Default (And minimum) is ~2.5 seconds. Ex: -d 5',
         metavar = '',
@@ -88,6 +89,7 @@ def parseArgs():
         '--framerate',
         nargs = '?',
         const = 25,
+        default = 25,
         type = int,
         help = 'Number of frames per second.  Default is 25. Ex: -f 30',
         metavar = '',
@@ -105,6 +107,40 @@ def parseArgs():
         required = False
     )
 
+    parser.add_argument(
+        '-b',
+        '--bitrate',
+        nargs = '?',
+        const = 12,
+        default = 12,
+        type = str,
+        help = 'Bitrate limit in M.  Default is 12M.  Bufsize is always 1M. Ex: -b 12',
+        metavar = '',
+        required = False
+    )
+
+    parser.add_argument(
+        '-c',
+        '--chroma',
+        nargs = '?',
+        const = None,
+        type = str,
+        help = 'Chroma subsampling scheme, also known in ffmpeg as a pixel format. Sometimes needed for specific encoders. Ex: -c yuv420p',
+        metavar = '',
+        required = False
+    )
+
+    parser.add_argument(
+        '-r',
+        '--rotate',
+        nargs = '?',
+        const = None,
+        type = int,
+        help = 'Rotation option.  Equivalent to ffmpeg transpose option. Ex: -r 1 (This will rotate image 90 degress clockwise)',
+        metavar = '',
+        required = False
+    )
+
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit()
@@ -112,18 +148,22 @@ def parseArgs():
     args = parser.parse_args()
     return args
 
-def streamCap(url,outputfile,path):
+def streamCap(url,outputfile,path,rotate=None):
     today = datetime.datetime.now()
     timestamp = today.strftime('%Y-%m-%d_%H-%M-%S')
     stream = ffmpeg.input(url, ss = 0, rtsp_transport = 'tcp', stimeout = 4000000)
+    if not rotate == None:
+        stream = ffmpeg.filter(stream, 'transpose','' + str(rotate) + '')
     capture = stream.output(path + outputfile + timestamp + '.jpg', vframes = 1)
     capture.run(capture_stdout = True, capture_stderr = True)
 
-def compileImages(outputfile,path,frames,encoder=None):
+def compileImages(outputfile,path,frames,encoder=None,bitrate='12',chroma=None):
     print('Compiling still frames...')
     today = datetime.datetime.now()
     timestamp = today.strftime('_%Y-%m-%d')
     load = ffmpeg.input(path + outputfile + '*.jpg', pattern_type = 'glob', framerate = frames)
+    if not chroma == None:
+        load = ffmpeg.filter(load, 'format', chroma)
     filename = path + outputfile + timestamp + '.mp4'
     if os.path.isfile(filename):
         if os.stat(filename).st_size == 0:
@@ -132,9 +172,9 @@ def compileImages(outputfile,path,frames,encoder=None):
         else:
             shutil.move(filename, filename + '.old' + timestamp)
     if not encoder == None:
-        combine = load.output(path + outputfile + timestamp + '.mp4', **{'c:v': encoder})
+        combine = load.output(path + outputfile + timestamp + '.mp4', **{'c:v': encoder}, **{'b:v': bitrate + 'M'}, maxrate = bitrate + 'M', bufsize = '1M')
     else:
-        combine = load.output(path + outputfile + timestamp + '.mp4')
+        combine = load.output(path + outputfile + timestamp + '.mp4', **{'b:v': bitrate + 'M'}, maxrate = bitrate + 'M', bufsize = '1M')
     combine.run(capture_stdout = True, capture_stderr = True)
     print('Compiled', filename)
 
@@ -211,6 +251,10 @@ if args.cli == 1:
     delay = float(args.delay) - float(2.5)
     framerate = int(args.framerate)
     encoder = args.encoder
+    rotate = args.rotate
+    chroma = args.chroma
+    bitrate = str(args.bitrate)
+
 elif args.conf == 1:
     from config import *
     delay = float(delay) - float(2.5)
@@ -224,6 +268,20 @@ if framerate <= 0:
     sys.exit()
 if encoder == '':
     encoder = None
+if not rotate == None:
+    try:
+        if int(rotate) > 4:
+            print('Rotate can only be 1-4. Please see ffmpeg transpose for details.')
+            sys.exit()
+    except Exception as e:
+        print('Rotate did not have an expected value, see the error below for more details:\n', e)
+        sys.exit()
+if not bitrate == '12':
+    try:
+        int(bitrate)
+    except Exception as e:
+        print('Bitrate did not have an expected value, see the error below for more details:\n', e)
+        sys.exit()
 if not os.path.isdir(path):
     print('Specified path not found')
     sys.exit()
@@ -236,15 +294,21 @@ print('Captures end at:', captureend)
 print('Delay between captures:', delay)
 print('Selected encoder:', encoder)
 print('Output framerate:', framerate)
+print('Output bitrate:', bitrate)
+if not rotate == None:
+    print('Transpose option:', rotate)
+if not chroma == None:
+    print('Chroma option:', chroma)
 while True:
     while True:
         result = timeLogic(capturestart,captureend)
         if result:
             wait = False
             try:
-                streamCap(url,outputfile,path)
+                streamCap(url,outputfile,path,rotate)
                 time.sleep(delay)
             except ffmpeg.Error as e:
+                print(ffmpeg.Error)
                 try:
                     iter(e)
                     if not e.stderr.decod('utf8') == None:
@@ -258,7 +322,7 @@ while True:
             break
     if wait == False:
         try:
-            compileImages(outputfile,path,framerate,encoder)
+            compileImages(outputfile,path,framerate,encoder,bitrate,chroma)
             cleanupDir(outputfile,path)
             wait = True
             time.sleep(5)

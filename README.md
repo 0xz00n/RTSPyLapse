@@ -17,7 +17,7 @@ This program can be used from either the command line or via the config.py file.
 ```
 $ python3 app.py
 usage: app.py [-h] [--cli ] [--conf [config.py]] [-u] [-o] [-p] [-cs] [-ce]
-              [-d ] [-f ] [-e ]
+              [-d ] [-f ] [-e ] [-b ] [-c ] [-r ]
 
 An RTSP stream timelapse creator.
 
@@ -35,7 +35,9 @@ optional arguments:
   -f [], --framerate []
                         Number of frames per second.  Default is 25. Ex: -f 30
   -e [], --encoder []   Encoder to use for mp4 creation, uses system default if unspecified.  Ex: -e h264_omx
-
+  -b [], --bitrate []   Bitrate limit in M.  Default is 12M.  Bufsize is always 1M. Ex: -b 12
+  -c [], --chroma []    Chroma subsampling scheme, also known in ffmpeg as a pixel format. Sometimes needed for specific encoders. Ex: -c yuv420p
+  -r [], --rotate []    Rotation option.  Equivalent to ffmpeg transpose option. Ex: -r 1 (This will rotate image 90 degress clockwise)
 ```
 
 > Config.py file
@@ -56,4 +58,11 @@ delay = 2.5
 framerate = 25
 # Encoder to use for mp4 creation.  Leave empty for default.
 encoder = ''
+# Bitrate limit in M.  Default is 12M.  Bufsize is always 1M. Ex: -b 12
+bitrate = 12
+# Chroma subsampling scheme, also known in ffmpeg as a pixel format. Sometimes needed for specific encoders. Ex: -c yuv420p
+chroma = None
+# Rotation option.  Equivalent to ffmpeg transpose option. Ex: -r 1 (This will rotate image 90 degress clockwise)
+rotate = None
 ```
+
